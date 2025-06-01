@@ -1,3 +1,5 @@
+package gui
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -14,7 +16,8 @@ import service.server.Service
 @Composable
 fun RegistrationScreen(
     service: Service,
-    onNavigateToLogin: () -> Unit){
+    onNavigateToLogin: () -> Unit
+) {
     var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
