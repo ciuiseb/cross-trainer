@@ -46,3 +46,6 @@ bin/
 
 src/main/kotlin/service/openapi/GeminiConfig.kt
 src/main/resources/*
+*.properties
+.idea/*
+*.cfg.*
