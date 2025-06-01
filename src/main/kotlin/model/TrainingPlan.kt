@@ -1,6 +1,5 @@
 package model
 
-import kotlinx.serialization.*
 import java.time.LocalDate
 import javax.persistence.*
 import javax.persistence.Entity
