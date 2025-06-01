@@ -28,7 +28,7 @@ data class User(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "fitness_level", nullable = false)
-    val fitnessLevel: FitnessLevel,
+    val fitnessLevel: FitnessLevel = FitnessLevel.NONE,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

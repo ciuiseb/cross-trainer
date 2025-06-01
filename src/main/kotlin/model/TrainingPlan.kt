@@ -3,8 +3,8 @@ package model
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.time.LocalDate
-import javax.persistence.*
-import javax.persistence.Entity
+import jakarta.persistence.*
+import jakarta.persistence.Entity
 
 @Entity
 @Table(name = "TrainingPlans")
