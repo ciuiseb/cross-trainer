@@ -21,16 +21,15 @@ fun DashboardScreen(
     onNavigateToTrainingPlanForm: () -> Unit,
     onLogOut: () -> Unit
 ) {
-    val currentUser by remember { mutableStateOf(user) }
     var trainingPlan by remember { mutableStateOf<TrainingPlan?>(null) }
     var todaysWorkout by remember { mutableStateOf<TrainingDay?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf("") }
 
-    LaunchedEffect(currentUser) {
-        if (currentUser.fitnessLevel != FitnessLevel.NONE) {
+    LaunchedEffect(user) {
+        if (user.fitnessLevel != FitnessLevel.NONE) {
             try {
-                val plan = service.getUserTrainingPlan(currentUser)
+                val plan = service.getUserTrainingPlan(user)
                 trainingPlan = plan
             } catch (e: Exception) {
                 error = "Error loading training plan: ${e.message}"
@@ -61,7 +60,7 @@ fun DashboardScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Welcome, ${currentUser.name}!",
+                text = "Welcome, ${user.name}!",
                 style = MaterialTheme.typography.h5
             )
 
@@ -89,7 +88,7 @@ fun DashboardScreen(
             }
         } else {
             when {
-                currentUser.fitnessLevel == FitnessLevel.NONE -> {
+                user.fitnessLevel == FitnessLevel.NONE -> {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -137,7 +136,7 @@ fun DashboardScreen(
                             )
 
                             Text(
-                                text = "Fitness Level: ${currentUser.fitnessLevel}",
+                                text = "Fitness Level: ${user.fitnessLevel}",
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
@@ -176,7 +175,7 @@ fun DashboardScreen(
                             )
 
                             Text(
-                                text = "Fitness Level: ${currentUser.fitnessLevel}",
+                                text = "Fitness Level: ${user.fitnessLevel}",
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
@@ -238,12 +237,12 @@ fun DashboardScreen(
                     )
 
                     Text(
-                        text = "Username: ${currentUser.username}",
+                        text = "Username: ${user.username}",
                         modifier = Modifier.padding(vertical = 2.dp)
                     )
 
                     Text(
-                        text = "Email: ${currentUser.email}",
+                        text = "Email: ${user.email}",
                         modifier = Modifier.padding(vertical = 2.dp)
                     )
                 }

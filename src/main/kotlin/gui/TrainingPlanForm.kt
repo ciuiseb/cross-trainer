@@ -10,15 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import model.User
-import model.requests.FitnessLevelRequest
-import model.requests.TrainingPlanRequest
+import model.requests.*
 import service.server.Service
 
 @Composable
 fun TrainingPlanForm(
     user: User,
     service: Service,
-    onNavigateToDashboard: () -> Unit
+    onCancel:() -> Unit,
+    onSubmit: () -> Unit,
 ) {
     val answers = remember { mutableStateMapOf<Int, String>() }
 
@@ -73,7 +73,7 @@ fun TrainingPlanForm(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = { onNavigateToDashboard() },
+                onClick = { onCancel() },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
@@ -108,7 +108,7 @@ fun TrainingPlanForm(
                                 isLoading = false
                                 errorMessage = "Failed to submit training plan form: ${e.message}"
                             } finally {
-                                onNavigateToDashboard()
+                                onSubmit()
                             }
                         }
                     }

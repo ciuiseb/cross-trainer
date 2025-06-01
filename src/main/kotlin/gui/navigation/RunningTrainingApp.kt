@@ -1,6 +1,5 @@
 package gui.navigation
 
-import RegistrationScreen
 import androidx.compose.runtime.*
 import gui.*
 import kotlinx.serialization.json.Json
@@ -49,14 +48,20 @@ fun RunningTrainingApp() {
             FitnessLevelForm(
                 user = it,
                 service = service,
-                onNavigateToDashboard = { currentScreen = Screen.DASHBOARD }
+                onCancel = { currentScreen = Screen.DASHBOARD },
+                onSubmit = { user ->
+                    currentScreen = Screen.DASHBOARD
+                    currentUser = user
+                }
             )
         }
+
         Screen.TRAINING_PLAN_FORM -> currentUser?.let {
             TrainingPlanForm(
                 user = it,
                 service = service,
-                onNavigateToDashboard = { currentScreen = Screen.DASHBOARD }
+                onCancel = { currentScreen = Screen.DASHBOARD },
+                onSubmit = { currentScreen = Screen.DASHBOARD }
             )
         }
     }

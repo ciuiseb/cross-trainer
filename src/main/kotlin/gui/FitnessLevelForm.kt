@@ -17,7 +17,8 @@ import service.server.Service
 fun FitnessLevelForm(
     user: User,
     service: Service,
-    onNavigateToDashboard: () -> Unit
+    onCancel: () -> Unit,
+    onSubmit: (User) -> Unit,
 ) {
     val answers = remember { mutableStateMapOf<Int, String>() }
 
@@ -72,7 +73,7 @@ fun FitnessLevelForm(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = { onNavigateToDashboard() },
+                onClick = { onCancel() },
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 8.dp)
@@ -103,11 +104,11 @@ fun FitnessLevelForm(
                                 val fitnessLevel = service.assessFitnessLevel(request)
                                 service.updateFitnessLevel(user, fitnessLevel)
                                 isLoading = false
+                                onSubmit(user.copy(fitnessLevel = fitnessLevel))
                             } catch (e: Exception) {
                                 isLoading = false
                                 errorMessage = "Failed to submit fitness level: ${e.message}"
-                            } finally {
-                                onNavigateToDashboard()
+                                onCancel()
                             }
                         }
                     }
