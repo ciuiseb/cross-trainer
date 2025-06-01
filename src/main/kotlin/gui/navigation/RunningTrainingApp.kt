@@ -8,9 +8,8 @@ import model.User
 import org.hibernate.SessionFactory
 import org.hibernate.cfg.Configuration
 import repository.impl.*
-import service.openapi.*
+import service.gemini.*
 import service.server.*
-import java.util.*
 
 @Composable
 fun RunningTrainingApp() {
@@ -38,6 +37,7 @@ fun RunningTrainingApp() {
                 user = it,
                 service = service,
                 onNavigateToFitnessForm = { currentScreen = Screen.FITNESS_FORM },
+                onNavigateToTrainingPlanForm = { currentScreen = Screen.TRAINING_PLAN_FORM },
                 onLogOut = {
                     currentScreen = Screen.LOGIN
                     currentUser = null
@@ -47,6 +47,13 @@ fun RunningTrainingApp() {
 
         Screen.FITNESS_FORM -> currentUser?.let {
             FitnessLevelForm(
+                user = it,
+                service = service,
+                onNavigateToDashboard = { currentScreen = Screen.DASHBOARD }
+            )
+        }
+        Screen.TRAINING_PLAN_FORM -> currentUser?.let {
+            TrainingPlanForm(
                 user = it,
                 service = service,
                 onNavigateToDashboard = { currentScreen = Screen.DASHBOARD }
@@ -67,7 +74,7 @@ private fun getService(): Service {
     val userRepo = UserRepositoryImpl(sessionFactory)
     val planRequestRepo = TrainingPlanRepositoryImpl(sessionFactory)
     val trainingDayRepo = TrainingDayRepositoryImpl(sessionFactory)
-    val opeanaiService = GeminiServiceImpl(GeminiConfig(), json)
+    val opeanaiService = GeminiServiceImpl(GeminiConfig.load(), json)
     return ServiceImpl(userRepo, planRequestRepo, trainingDayRepo, opeanaiService)
 }
 
