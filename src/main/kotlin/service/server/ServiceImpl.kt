@@ -30,7 +30,6 @@ class ServiceImpl(
             username = username,
             email = email,
             password = password.hashCode().toString(),
-            fitnessLevel = FitnessLevel.NONE
         )
 
         return userRepository.save(user)
