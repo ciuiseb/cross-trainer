@@ -1,72 +1,50 @@
 package repository.impl
 
-import database.DatabaseHelper
+import jakarta.persistence.NoResultException
 import model.User
-import model.enums.FitnessLevel
-import model.enums.UserRole
+import org.hibernate.SessionFactory
 import repository.interfaces.UserRepository
-import java.sql.ResultSet
 
-class UserRepositoryImpl(private val dbHelper: DatabaseHelper) : UserRepository {
-    private val tableName: String = "Users"
-    private val userMapper: (ResultSet) -> User = { resultSet ->
-        User(
-            id = resultSet.getLong("id"),
-            name = resultSet.getString("name"),
-            username = resultSet.getString("username"),
-            email = resultSet.getString("email"),
-            password = resultSet.getString("password").hashCode().toString(),
-            fitnessLevel = FitnessLevel.valueOf(resultSet.getString("fitness_level")),
-            role = UserRole.valueOf(resultSet.getString("role"))
-        )
-    }
+class UserRepositoryImpl(private val sessionFactory: SessionFactory) : UserRepository {
 
     override suspend fun findById(id: Long): User? {
-        val sql = "SELECT * FROM $tableName WHERE id = ?"
-        return dbHelper.executeQuery(sql, listOf(id), userMapper).firstOrNull()
+        return sessionFactory.openSession().use { session ->
+            session.get(User::class.java, id)
+        }
     }
 
     override suspend fun findAll(): List<User> {
-        val sql = "SELECT * FROM $tableName"
-        return dbHelper.executeQuery(sql, emptyList(), userMapper)
+        return sessionFactory.openSession().use { session ->
+            session.createQuery("FROM User", User::class.java).list()
+        }
     }
 
     override suspend fun save(entity: User): User {
-        val sql = """
-            INSERT INTO $tableName (name, username, email, password, fitness_level, role)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """
-        val params = listOf(
-            entity.name,
-            entity.username,
-            entity.email,
-            entity.password,
-            entity.fitnessLevel.name,
-            entity.role.name
-        )
-
-        val id = dbHelper.executeInsert(sql, params)
-        return entity.copy(id = id)
+        return sessionFactory.openSession().use { session ->
+            val transaction = session.beginTransaction()
+            try {
+                session.persist(entity)
+                transaction.commit()
+                entity
+            } catch (e: Exception) {
+                transaction.rollback()
+                throw e
+            }
+        }
     }
 
     override suspend fun update(entity: User): User {
-        val sql = """
-            UPDATE $tableName 
-            SET name = ?, username = ?, email = ?, password = ?, fitness_level = ?, role = ?
-            WHERE id = ?
-        """
-        val params = listOf(
-            entity.name,
-            entity.username,
-            entity.email,
-            entity.password,
-            entity.fitnessLevel.name,
-            entity.role.name,
-            entity.id
-        )
-
-        dbHelper.executeUpdate(sql, params)
-        return entity
+        return sessionFactory.openSession().use { session ->
+            val transaction = session.beginTransaction()
+            try {
+                val updated = session.merge(entity)
+                transaction.commit()
+                updated
+            } catch (e: Exception) {
+                transaction.rollback()
+                throw e
+            }
+        }
     }
 
     override suspend fun delete(entity: User): Boolean {
@@ -74,19 +52,36 @@ class UserRepositoryImpl(private val dbHelper: DatabaseHelper) : UserRepository 
     }
 
     override suspend fun deleteById(id: Long): Boolean {
-        val sql = "DELETE FROM $tableName WHERE id = ?"
-        val rowsAffected = dbHelper.executeUpdate(sql, listOf(id))
-        return rowsAffected > 0
+        return sessionFactory.openSession().use { session ->
+            val transaction = session.beginTransaction()
+            try {
+                val rowsAffected = session.createQuery("DELETE FROM User WHERE id = :id")
+                    .setParameter("id", id)
+                    .executeUpdate()
+                transaction.commit()
+                rowsAffected > 0
+            } catch (e: Exception) {
+                transaction.rollback()
+                throw e
+            }
+        }
     }
 
     override suspend fun count(): Long {
-        val sql = "SELECT COUNT(*) as count FROM $tableName"
-        val result = dbHelper.executeQuery(sql, emptyList()) { rs -> rs.getLong("count") }
-        return result.firstOrNull() ?: 0
+        return sessionFactory.openSession().use { session ->
+            session.createQuery("SELECT COUNT(u) FROM User u", Long::class.java).singleResult
+        }
     }
 
     override suspend fun findByUsername(username: String): User? {
-        val sql = "SELECT * FROM $tableName WHERE username = ?"
-        return dbHelper.executeQuery(sql, listOf(username), userMapper).firstOrNull()
+        return sessionFactory.openSession().use { session ->
+            try {
+                session.createQuery("FROM User WHERE username = :username", User::class.java)
+                    .setParameter("username", username)
+                    .singleResult
+            } catch (e: NoResultException) {
+                null
+            }
+        }
     }
 }
