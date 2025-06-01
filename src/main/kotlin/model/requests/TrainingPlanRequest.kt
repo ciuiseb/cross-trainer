@@ -9,8 +9,12 @@ data class TrainingPlanRequest(
     val preparationWeeks: Int,
     val fitnessLevel: FitnessLevel,
     val trainingDaysPerWeek: Int,
-    val currentWeeklyDistance: String? = null
 ): APIRequest {
+    val QUESTIONS = listOf(
+        "What is your target distance?",
+        "How many weeks do you have to prepare?",
+        "How many days do you want to train per week?"
+    )
     override fun getRequestPrompt(): String {
         val availableWorkouts = WorkoutType.values().joinToString(", ") { it.displayName }
 
@@ -19,8 +23,8 @@ data class TrainingPlanRequest(
             
             Requirements:
             • Target distance: $targetDistance
+            • Weeks to prepare: $preparationWeeks
             • Training days per week: $trainingDaysPerWeek
-            • Current weekly distance: ${currentWeeklyDistance ?: "Not specified"}
             • Available workout types: $availableWorkouts
             
             Return ONLY valid JSON in this exact format:
