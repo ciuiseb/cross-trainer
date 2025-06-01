@@ -7,10 +7,11 @@ import model.enums.UserRole
 import java.util.*
 
 @Entity
-@Table(name = "users")
+@Table(name = "Users")
 data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", columnDefinition = "INTEGER")
     val id: Long = 0,
 
     @Column(nullable = false, length = 100)

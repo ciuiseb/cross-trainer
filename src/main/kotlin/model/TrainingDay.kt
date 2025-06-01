@@ -1,10 +1,10 @@
 package model
 
-import model.enums.WorkoutType
 import jakarta.persistence.*
 import jakarta.persistence.Entity
 import jakarta.persistence.GenerationType.IDENTITY
 import kotlinx.serialization.Serializable
+import model.enums.WorkoutType
 
 @Entity
 @Table(name = "TrainingDays")
@@ -12,8 +12,9 @@ import kotlinx.serialization.Serializable
 data class TrainingDay(
     @Id
     @GeneratedValue(strategy = IDENTITY)
+    @Column(name = "id", columnDefinition = "INTEGER")
     val id: Long = 0,
-    @Column(name = "training_plan_id", nullable = false)
+    @Column(name = "training_plan_id", nullable = false, columnDefinition = "INTEGER")
     val trainingPlanId: Long,
     @Column(name = "day_number", nullable = false)
     val dayNumber: Int,
