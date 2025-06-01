@@ -1,5 +1,7 @@
 package service.server
 
+import java.time.LocalDate
+import model.TrainingDay
 import model.TrainingPlan
 import model.User
 import model.enums.FitnessLevel
@@ -9,11 +11,12 @@ import repository.interfaces.TrainingDayRepository
 import repository.interfaces.TrainingPlanRepository
 import repository.interfaces.UserRepository
 import service.gemini.GeminiService
+import java.time.temporal.ChronoUnit
 
 class ServiceImpl(
     private val userRepository: UserRepository,
     private val trainingPlanRepository: TrainingPlanRepository,
-    private val traningDayRepository: TrainingDayRepository,
+    private val trainingDayRepository: TrainingDayRepository,
     private val geminiService: GeminiService
 ) : Service {
 
@@ -65,6 +68,20 @@ class ServiceImpl(
         return trainingPlanRepository.save(plan)
     }
 
+    override suspend fun getTodaysWorkout(plan: TrainingPlan): TrainingDay? {
+        val today = LocalDate.now()
+        if (today.isBefore(plan.startDate) or today.isAfter(plan.endDate)) {
+            return null
+        }
+
+        val dayNumber = ChronoUnit.DAYS.between(plan.startDate, today).toInt() + 1
+        return trainingDayRepository.findByTrainingPlanIdAndDayNumber(plan.id, dayNumber)
+    }
+
+    override suspend fun getTrainingDaysForPlan(planId: Long): List<TrainingDay> {
+        return trainingDayRepository.findByTrainingPlanId(planId)
+    }
+
     override suspend fun assessFitnessLevel(fitnessLevelRequest: FitnessLevelRequest): FitnessLevel {
         return geminiService.determineFitnessLevel(fitnessLevelRequest)
     }
@@ -76,7 +93,7 @@ class ServiceImpl(
         trainingDays.map { day ->
             day.copy(trainingPlanId = savedTrainingPlan.id)
         }.forEach { day ->
-            traningDayRepository.save(day)
+            trainingDayRepository.save(day)
         }
 
         return savedTrainingPlan
