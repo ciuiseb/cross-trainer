@@ -1,11 +1,14 @@
 package model
 
+import kotlinx.serialization.*
 import java.time.LocalDate
 import javax.persistence.*
 import javax.persistence.Entity
-
+import kotlinx.serialization.Transient
+import kotlinx.serialization.Serializable
 @Entity
 @Table(name = "TrainingPlans")
+@Serializable
 data class TrainingPlan(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,8 +21,10 @@ data class TrainingPlan(
     val targetDistance: String,
     @Column(name = "preparation_weeks", nullable = false)
     val preparationWeeks: Int,
+    @Transient
     @Column(name = "start_date", nullable = false)
     val startDate: LocalDate = LocalDate.now(),
+    @Transient
     @Column(name = "end_date", nullable = false)
     val endDate: LocalDate = startDate.plusDays(preparationWeeks * 7L)
 )

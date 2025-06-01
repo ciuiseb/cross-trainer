@@ -4,9 +4,11 @@ import model.enums.WorkoutType
 import jakarta.persistence.*
 import jakarta.persistence.Entity
 import jakarta.persistence.GenerationType.IDENTITY
+import kotlinx.serialization.Serializable
 
 @Entity
 @Table(name = "TrainingDays")
+@Serializable
 data class TrainingDay(
     @Id
     @GeneratedValue(strategy = IDENTITY)

@@ -1,5 +1,8 @@
 package model.enums
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class FitnessLevel {
     NONE, BEGINNER, INTERMEDIATE, ADVANCED;
 
