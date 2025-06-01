@@ -92,6 +92,7 @@ fun FitnessLevelForm(
                         return@Button
                     } else {
                         val request = FitnessLevelRequest(
+                            userId = user.id,
                             weeklyRunningDistance = answers[0] ?: "",
                             longestRecentRun = answers[1] ?: "",
                             runningExperience = answers[2] ?: "",

@@ -1,6 +1,7 @@
 package model.requests
 
 data class FitnessLevelRequest(
+    val userId: Long,
     val weeklyRunningDistance: String,
     val longestRecentRun: String,
     val runningExperience: String,
