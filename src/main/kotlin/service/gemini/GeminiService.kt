@@ -1,4 +1,4 @@
-package service.openapi
+package service.gemini
 
 import model.TrainingDay
 import model.TrainingPlan

@@ -1,4 +1,4 @@
-package service.openapi
+package service.gemini
 
 import io.ktor.client.*
 import io.ktor.client.call.*
