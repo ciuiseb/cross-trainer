@@ -7,13 +7,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import model.User
 import service.server.Service
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     service: Service,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (User) -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
     var username by remember { mutableStateOf("") }
@@ -59,7 +60,7 @@ fun LoginScreen(
                 coroutineScope.launch {
                     val user = service.login(username, password)
                     if (user != null) {
-                        onLoginSuccess()
+                        onLoginSuccess(user)
                     } else {
                         error = "Invalid username or password"
                     }
