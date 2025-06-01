@@ -8,7 +8,7 @@ import model.requests.TrainingPlanRequest
 import repository.interfaces.TrainingDayRepository
 import repository.interfaces.TrainingPlanRepository
 import repository.interfaces.UserRepository
-import service.openapi.GeminiService
+import service.gemini.GeminiService
 
 class ServiceImpl(
     private val userRepository: UserRepository,
