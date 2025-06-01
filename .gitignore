@@ -45,3 +45,4 @@ bin/
 .DS_Store
 
 src/main/kotlin/service/openapi/GeminiConfig.kt
+src/main/resources/*
