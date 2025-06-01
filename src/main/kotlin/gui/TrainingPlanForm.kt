@@ -40,7 +40,7 @@ fun TrainingPlanForm(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        FitnessLevelRequest.QUESTIONS.forEachIndexed { index, question ->
+        TrainingPlanRequest.QUESTIONS.forEachIndexed { index, question ->
             Text(
                 text = question,
                 style = MaterialTheme.typography.subtitle1,
@@ -83,7 +83,7 @@ fun TrainingPlanForm(
 
             Button(
                 onClick = {
-                    val unansweredQuestions = FitnessLevelRequest.QUESTIONS.indices.filter {
+                    val unansweredQuestions = TrainingPlanRequest.QUESTIONS.indices.filter {
                         answers[it].isNullOrBlank()
                     }
 

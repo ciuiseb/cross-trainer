@@ -10,11 +10,13 @@ data class TrainingPlanRequest(
     val fitnessLevel: FitnessLevel,
     val trainingDaysPerWeek: Int,
 ): APIRequest {
-    val QUESTIONS = listOf(
-        "What is your target distance?",
-        "How many weeks do you have to prepare?",
-        "How many days do you want to train per week?"
-    )
+    companion object {
+        val QUESTIONS = listOf(
+            "What is your target distance?",
+            "How many weeks do you have to prepare?",
+            "How many days do you want to train per week?"
+        )
+    }
     override fun getRequestPrompt(): String {
         val availableWorkouts = WorkoutType.values().joinToString(", ") { it.displayName }
 
