@@ -21,7 +21,7 @@ class TrainingDayRepositoryImpl(private val sessionFactory: SessionFactory) : Tr
             val root: JpaRoot<TrainingDay> = criteriaQuery.from(TrainingDay::class.java)
 
             criteriaQuery.select(root)
-                .where(criteriaBuilder.equal(root.get<Long>("training_plan_id"), trainingPlanId))
+                .where(criteriaBuilder.equal(root.get<Long>("trainingPlanId"), trainingPlanId))
 
             session.createQuery(criteriaQuery).list()
         }
@@ -37,8 +37,8 @@ class TrainingDayRepositoryImpl(private val sessionFactory: SessionFactory) : Tr
                 criteriaQuery.select(root)
                     .where(
                         criteriaBuilder.and(
-                            criteriaBuilder.equal(root.get<Long>("training_plan_id"), trainingPlanId),
-                            criteriaBuilder.equal(root.get<Int>("day_number"), dayNumber)
+                            criteriaBuilder.equal(root.get<Long>("trainingPlanId"), trainingPlanId),
+                            criteriaBuilder.equal(root.get<Int>("dayNumber"), dayNumber)
                         )
                     )
 

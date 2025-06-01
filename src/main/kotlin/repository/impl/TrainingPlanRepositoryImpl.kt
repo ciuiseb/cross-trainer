@@ -111,7 +111,7 @@ class TrainingPlanRepositoryImpl(private val sessionFactory: SessionFactory) : T
             val root: Root<TrainingPlan> = criteriaQuery.from(TrainingPlan::class.java)
 
             criteriaQuery.select(root)
-                .where(criteriaBuilder.equal(root.get<Long>("user_id"), userId))
+                .where(criteriaBuilder.equal(root.get<Long>("userId"), userId))
 
             session.createQuery(criteriaQuery).list()
         }
