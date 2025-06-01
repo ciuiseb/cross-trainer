@@ -25,8 +25,7 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
     }
 
     override suspend fun determineFitnessLevel(request: FitnessLevelRequest): FitnessLevel {
-        logger.info("Starting fitness level determination for user request")
-        logger.debug("Request details: {}", request)
+        logger.info("Determining fitness level for user request")
 
         val requestPrompt = request.getRequestPrompt()
 
@@ -46,8 +45,6 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
             })
         }
 
-        logger.debug("Sending request to Gemini API: {}", requestBody)
-
         try {
             val response = httpClient.post("${config.baseUrl}/models/${config.model}:generateContent") {
                 header("Content-Type", "application/json")
@@ -56,38 +53,32 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
             }
 
             val responseText = response.body<String>()
-            logger.debug("Received response from Gemini API: {}", responseText)
-
             val jsonResponse = json.parseToJsonElement(responseText).jsonObject
             val candidates = jsonResponse["candidates"]?.jsonArray
             val content = candidates?.get(0)?.jsonObject?.get("content")?.jsonObject
             val parts = content?.get("parts")?.jsonArray
             val text = parts?.get(0)?.jsonObject?.get("text")?.jsonPrimitive?.content?.trim()?.uppercase()
 
-            logger.debug("Extracted fitness level text: '{}'", text)
-
             val fitnessLevel = try {
                 FitnessLevel.valueOf(text ?: "NONE")
             } catch (e: IllegalArgumentException) {
-                logger.warn("Failed to parse fitness level '{}', defaulting to NONE", text, e)
+                logger.warn("Invalid fitness level response '{}', defaulting to NONE", text)
                 FitnessLevel.NONE
             }
 
-            logger.info("Determined fitness level: {}", fitnessLevel)
+            logger.info("Fitness level determined: {}", fitnessLevel)
             return fitnessLevel
 
         } catch (e: Exception) {
-            logger.error("Error determining fitness level", e)
+            logger.error("Failed to determine fitness level: {}", e.message)
             throw e
         }
     }
 
     override suspend fun generateTrainingPlan(request: TrainingPlanRequest): Pair<TrainingPlan, List<TrainingDay>> {
-        logger.info("Starting training plan generation for user ID: {}", request.userId)
-        logger.debug("Training plan request: {}", request)
+        logger.info("Generating training plan for user: {}", request.userId)
 
         val requestPrompt = request.getRequestPrompt()
-        logger.info("Generated training plan prompt: {}", requestPrompt)
 
         val requestBody = buildJsonObject {
             put("contents", buildJsonArray {
@@ -104,9 +95,6 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
             })
         }
 
-        logger.debug("Full request body to Gemini API: {}", requestBody)
-        logger.info("Sending training plan request to Gemini API")
-
         try {
             val response = httpClient.post("${config.baseUrl}/models/${config.model}:generateContent") {
                 header("Content-Type", "application/json")
@@ -115,14 +103,12 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
             }
 
             val responseText = response.body<String>()
-            logger.debug("Received training plan response from Gemini API: {}", responseText)
-
-            // Check if response contains an error
             val jsonResponse = json.parseToJsonElement(responseText).jsonObject
+
+            // Check for API errors
             if (jsonResponse.containsKey("error")) {
-                val error = jsonResponse["error"]?.jsonObject
-                val errorMessage = error?.get("message")?.jsonPrimitive?.content
-                logger.error("Gemini API returned error: {}", errorMessage)
+                val errorMessage = jsonResponse["error"]?.jsonObject?.get("message")?.jsonPrimitive?.content
+                logger.error("Gemini API error: {}", errorMessage)
                 throw IllegalStateException("Gemini API error: $errorMessage")
             }
 
@@ -131,10 +117,8 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
             val parts = content?.get("parts")?.jsonArray
             val aiResponseText = parts?.get(0)?.jsonObject?.get("text")?.jsonPrimitive?.content
 
-            logger.debug("Raw AI response text: {}", aiResponseText)
-
             if (aiResponseText.isNullOrBlank()) {
-                logger.error("AI response text is null or empty")
+                logger.error("Empty response from Gemini API")
                 throw IllegalStateException("Empty response from AI")
             }
 
@@ -144,21 +128,15 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
                 .removeSuffix("```")
                 .trim()
 
-            logger.debug("Cleaned JSON for parsing: {}", cleanedJson)
-
-            logger.debug("Parsing AI response to training plan")
             val aiJson = try {
                 json.parseToJsonElement(cleanedJson).jsonObject
             } catch (e: Exception) {
-                logger.error("Failed to parse AI response as JSON: {}", aiResponseText, e)
-                throw IllegalStateException("Invalid JSON response from AI: $aiResponseText", e)
+                logger.error("Invalid JSON response from AI: {}", e.message)
+                throw IllegalStateException("Invalid JSON response from AI", e)
             }
 
             val trainingPlanJson = aiJson["trainingPlan"]?.jsonObject
-            if (trainingPlanJson == null) {
-                logger.error("No 'trainingPlan' found in AI response: {}", aiJson)
-                throw IllegalStateException("Missing trainingPlan in AI response")
-            }
+                ?: throw IllegalStateException("Missing trainingPlan in AI response")
 
             val trainingPlan = TrainingPlan(
                 userId = request.userId,
@@ -168,10 +146,7 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
             )
 
             val trainingDaysJson = aiJson["trainingDays"]?.jsonArray
-            if (trainingDaysJson == null) {
-                logger.error("No 'trainingDays' found in AI response: {}", aiJson)
-                throw IllegalStateException("Missing trainingDays in AI response")
-            }
+                ?: throw IllegalStateException("Missing trainingDays in AI response")
 
             val trainingDays = trainingDaysJson.map { dayElement ->
                 val dayObject = dayElement.jsonObject
@@ -179,7 +154,7 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
                 val workoutTypeString = json.decodeFromJsonElement<String>(dayObject["workoutType"]!!)
                 val workoutTypeEnum = WorkoutType.values().find { it.displayName == workoutTypeString }
                     ?: run {
-                        logger.warn("Unknown workout type '{}', defaulting to EASY_RUN", workoutTypeString)
+                        logger.warn("Unknown workout type '{}', using REST", workoutTypeString)
                         WorkoutType.REST
                     }
 
@@ -193,14 +168,11 @@ data class GeminiServiceImpl(val config: GeminiConfig, val json: Json): GeminiSe
                 )
             }
 
-            logger.info("Successfully generated training plan '{}' with {} training days",
-                trainingPlan.name, trainingDays.size)
-            logger.debug("Training plan details: {}", trainingPlan)
-
+            logger.info("Training plan '{}' generated with {} days", trainingPlan.name, trainingDays.size)
             return Pair(trainingPlan, trainingDays)
 
         } catch (e: Exception) {
-            logger.error("Error generating training plan for user ID: {}", request.userId, e)
+            logger.error("Failed to generate training plan for user {}: {}", request.userId, e.message)
             throw e
         }
     }
